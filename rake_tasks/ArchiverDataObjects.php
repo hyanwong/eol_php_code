@@ -1,7 +1,7 @@
 <?php
 
 include_once(dirname(__FILE__) . "/../config/environment.php");
-//include 'Archiver.php';
+include 'Archiver.php';
 
 
 //////////////////////////////////////////////////////////////////////////////////////////

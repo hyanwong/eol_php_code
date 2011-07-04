@@ -60,18 +60,24 @@ include_once(dirname(__FILE__) . "/../../config/environment.php");
 //require_once(DOC_ROOT . 'vendor/simpletest/autorun.php');
 require_once(DOC_ROOT . 'vendor/simpletest_extended/simpletest_unit_base.php');
 
+
 include '../rake_tasks/ArchiverDataObjects.php';
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 class test_archiver_data_objects extends SimpletestUnitBase
 {
 
-private $my_archiver_data_objects;
+private $object_under_test;
 private $table_names_arr = array();
 private $arr_elements    = array();
 
 private $primary_table_name = "data_objects";
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +88,39 @@ public function __construct()
 {
     $this->mysqli =& $GLOBALS["db_connection"];
 
+    $this->initialize();
+
 } // end of constructor
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+public function initialize()
+{
+//echo "\n\n\t ENTERING initialize()";
+
+    // Instantiate an ArchiverDataObjects, and initialize it.
+    // Initialization will cause it to create its table_names_arr array.
+    // It is the table_names_arr array we need to access, to execute these tests.
+    
+    $this->object_under_test = new ArchiverDataObjects(FALSE);
+//    $this->object_under_test = new ArchiverDataObjects(TRUE);
+//    $this->object_under_test->get_database_connection_info();
+
+
+
+    $this->table_names_arr = $this->object_under_test->get_table_names_arr();
+    //$this->display_table_names_arr();
+
+
+    // Create a temporary table to hold intermediate results
+    $this->initialize_archiver_temporary_table();
+
+//echo "\n\n\t LEAVING  initialize()";
+} // end of initialize()
 
 
 
@@ -93,13 +131,6 @@ public function __construct()
 public function setUp()
 {
 //echo "\n\n\t ENTERING setUp()";
-
-    if (!isset($this->my_archiver_data_objects))
-    {
-//        echo "\n\n\t my_archiver_data_objects is NOT set\n";
-        $this->initialize();
-    }
-
 
 
     // truncate DO & FRT Tables
@@ -160,7 +191,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -235,7 +266,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -313,7 +344,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -391,7 +422,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -468,7 +499,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -550,7 +581,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -635,7 +666,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -724,7 +755,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -825,7 +856,7 @@ EXPECTED RESULT:
 
 
     // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -944,7 +975,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -1053,7 +1084,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -1164,7 +1195,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -1274,7 +1305,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -1384,7 +1415,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -1494,7 +1525,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -1596,7 +1627,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 0 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(0);
+    $this->object_under_test->process_archivable_ids(0);
 
 
 
@@ -1673,7 +1704,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 1 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(1);
+    $this->object_under_test->process_archivable_ids(1);
 
 
 
@@ -1751,7 +1782,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 2 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(2);
+    $this->object_under_test->process_archivable_ids(2);
 
 
 
@@ -1829,7 +1860,7 @@ EXPECTED EXPECTED RESULT:
 
 
 // ARCHIVE, max 9 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(9);
+    $this->object_under_test->process_archivable_ids(9);
 
 
 
@@ -1907,7 +1938,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 10 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids($max_rowcount);
+    $this->object_under_test->process_archivable_ids($max_rowcount);
 
 
 
@@ -1985,7 +2016,7 @@ EXPECTED RESULT:
 
 
 // ARCHIVE, max 100 do_ids
-    $this->my_archiver_data_objects->process_archivable_ids(100);
+    $this->object_under_test->process_archivable_ids(100);
 
 
 
@@ -2025,34 +2056,6 @@ EXPECTED RESULT:
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-public function initialize()
-{
-//echo "\n\n\t ENTERING initialize()";
-
-    // Instantiate an ArchiverDataObjects, and initialize it.
-    // Initialization will cause it to create its table_names_arr array.
-    // It is the table_names_arr array we need to access, to execute these tests.
-    
-    $this->my_archiver_data_objects = new ArchiverDataObjects();
-    $this->my_archiver_data_objects->initialize();
-
-    $this->table_names_arr = $this->my_archiver_data_objects->get_table_names_arr();
-    //$this->display_table_names_arr();
-
-
-    // Create a temporary table to hold intermediate results
-//    $this->init_archiver_temporary_table($this->table_names_arr);
-    $this->initialize_archiver_temporary_table();
-
-//echo "\n\n\t LEAVING  initialize()";
-} // end of initialize()
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 

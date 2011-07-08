@@ -2,8 +2,12 @@
 // cd $PHP_CODE/rake_tasks/
 // php -l ArchiverHierarchyEntries.php
 
-include_once(dirname(__FILE__) . "/../config/environment.php");
-include 'Archiver.php';
+
+#echo "\n\n\t READING: ArchiverHierarchyEntries.php\n";
+
+#echo "\n\n\t REQUIRING: Archiver.php\n";
+require_once 'Archiver.php';
+#echo "\n\n\t RETURNED FROM: Archiver.php\n";
 
 
 
@@ -41,17 +45,14 @@ include 'Archiver.php';
 class ArchiverHierarchyEntries extends Archiver implements populate_the_table_arr
 {
 
-private $primary_table   = "hierarchy_entries";
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 public function populate_table_arr()
 {
 if ($this->is_tracing) echo "\n\n ENTERING populate_table_arr()";
+
+$this->primary_table   = "hierarchy_entries";
+
 
 // Tables to be archived:
 //   Primary Table: 
@@ -111,14 +112,19 @@ if ($this->is_tracing) echo "\n\n ENTERING populate_table_arr()";
 ////// Table curated_hierarchy_entry_relationships doesn't fit the pattern.
 ////// It has two references to hierarchy_entries.id: hierarchy_entry_id_1 & hierarchy_entry_id_2
 
-    $this->table_arr[$idx++]=
-    array("curated_hierarchy_entry_relationships", "curated_hierarchy_entry_relationships_archive",
-    "hierarchy_entry_id_1");
-
+    $col_name = "hierarchy_entry_id_1";
 
     $this->table_arr[$idx++]=
     array("curated_hierarchy_entry_relationships", "curated_hierarchy_entry_relationships_archive",
-    "hierarchy_entry_id_2");
+    $col_name);
+
+
+
+    $col_name = "hierarchy_entry_id_2";
+
+    $this->table_arr[$idx++]=
+    array("curated_hierarchy_entry_relationships", "curated_hierarchy_entry_relationships_archive",
+    $col_name);
 
 
 

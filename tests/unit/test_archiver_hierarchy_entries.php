@@ -1,6 +1,4 @@
 <?php
-// cd $PHP_CODE/tests/
-// php  run_tests.php unit/test_archiver_hierarchy_entries.php
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -79,11 +77,11 @@ include '../rake_tasks/ArchiverHierarchyEntries.php';
 class test_archiver_hierarchy_entries extends SimpletestUnitBase
 {
 
-private $object_under_test;
-private $table_names_arr = array();
-private $arr_elements    = array();
+    private $object_under_test;
+    private $table_names_arr = array();
+    private $arr_elements    = array();
 
-private $primary_table_name = "hierarchy_entries";
+    private $primary_table_name = "hierarchy_entries";
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,6 +139,7 @@ echo "\n\n\t LEAVING  tearDown()";
 /*********
 TEST a1
 All the required tables are being archived.
+i.e.:
     - agents_hierarchy_entries
     - curated_hierarchy_entry_relationships
     - data_objects_hierarchy_entries
@@ -174,7 +173,9 @@ public function test_a1()
     $max_rowcount = 10;
 
     // ADDITIONAL SETUP
-    // Populate HierarchyEntries with 10 rows. UPDATE HierarchyEntries.archive=TRUE in only 1 row.
+    // Populate DataObjects with 10 rows.
+    // UPDATE DataObjects.archive=FALSE in all rows.
+    // UPDATE DataObjects.archive=TRUE  in 1 row.
     $this->insert_into_hierarchy_entries($max_rowcount);
     $this->update_archive_column('hierarchy_entries', 'FALSE', $max_rowcount);
     $this->update_archive_column('hierarchy_entries', 'TRUE',   1);
@@ -282,7 +283,9 @@ public function test_b1()
     $max_rowcount = 10;
 
     // ADDITIONAL SETUP
-    // Populate HierarchyEntries with 10 rows. UPDATE HierarchyEntries.archive=FALSE in all rows.
+    // Populate DataObjects with 10 rows.
+    // UPDATE DataObjects.archive=FALSE in all rows.
+    // UPDATE DataObjects.archive=TRUE  in 2 rows.
     $this->insert_into_hierarchy_entries($max_rowcount);
     $this->update_archive_column('hierarchy_entries', 'FALSE', 10);
     $this->update_archive_column('hierarchy_entries', 'TRUE',   2);
@@ -372,7 +375,9 @@ public function test_b2()
     $max_rowcount = 10;
 
     // ADDITIONAL SETUP
-    // Populate HierarchyEntries with 10 rows. UPDATE HierarchyEntries.archive=FALSE in all rows.
+    // Populate DataObjects with 10 rows.
+    // UPDATE DataObjects.archive=FALSE in all rows.
+    // UPDATE DataObjects.archive=TRUE  in 2 rows.
     $this->insert_into_hierarchy_entries($max_rowcount);
     $this->update_archive_column('hierarchy_entries', 'FALSE', 10);
     $this->update_archive_column('hierarchy_entries', 'TRUE',   2);
@@ -464,7 +469,9 @@ public function test_b3()
     $max_rowcount = 10;
 
     // ADDITIONAL SETUP
-    // Populate HierarchyEntries with 10 rows. UPDATE HierarchyEntries.archive=FALSE in all rows.
+    // Populate DataObjects with 10 rows.
+    // UPDATE DataObjects.archive=FALSE in all rows.
+    // UPDATE DataObjects.archive=TRUE  in 2 rows.
     $this->insert_into_hierarchy_entries($max_rowcount);
     $this->update_archive_column('hierarchy_entries', 'FALSE', 10);
     $this->update_archive_column('hierarchy_entries', 'TRUE',   2);
@@ -558,7 +565,9 @@ public function test_b4()
     $max_rowcount = 10;
 
     // ADDITIONAL SETUP
-    // Populate HierarchyEntries with 10 rows. UPDATE HierarchyEntries.archive=FALSE in all rows.
+    // Populate DataObjects with 10 rows.
+    // UPDATE DataObjects.archive=FALSE in all rows.
+    // UPDATE DataObjects.archive=TRUE  in 2 rows.
     $this->insert_into_hierarchy_entries($max_rowcount);
     $this->update_archive_column('hierarchy_entries', 'FALSE', 10);
     $this->update_archive_column('hierarchy_entries', 'TRUE',   2);
@@ -815,9 +824,8 @@ public function initialize()
     // Initialization will cause it to create its table_names_arr array.
     // It is the table_names_arr array we need to access, to execute these tests.
     
-    $this->object_under_test = new ArchiverHierarchyEntries(TRUE);
-//    $this->object_under_test = new ArchiverHierarchyEntries(FALSE);
-
+//    $this->object_under_test = new ArchiverHierarchyEntries(TRUE); // TRUE to trace fn calls.
+    $this->object_under_test = new ArchiverHierarchyEntries(FALSE);
 //    $this->object_under_test->get_database_connection_info();
 
 
@@ -1345,6 +1353,7 @@ public function insert_into_hierarchy_entries($_max_inserts=0)
 // - harvest_events_hierarchy_entries
 // - hierarchy_entries_refs
 // - synonyms
+
 public function populate_frts($row_limit, $_he_id, $_offset)
 {
 #echo "\n\n\t ENTERING populate_frts($row_limit, $_he_id)";

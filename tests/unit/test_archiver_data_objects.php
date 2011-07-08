@@ -1,6 +1,6 @@
 <?php
 // cd $PHP_CODE/tests/
-// php run_tests.php unit/test_archiver_data_objects.php
+// php   run_tests.php   unit/test_archiver_data_objects.php
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,9 +55,7 @@
 
 
 
-include_once(dirname(__FILE__) . "/../../config/environment.php");
-//include 'Archiver.php';
-//require_once(DOC_ROOT . 'vendor/simpletest/autorun.php');
+require_once(dirname(__FILE__) . "/../../config/environment.php");
 require_once(DOC_ROOT . 'vendor/simpletest_extended/simpletest_unit_base.php');
 
 

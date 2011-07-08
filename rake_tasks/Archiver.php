@@ -2,7 +2,12 @@
 // cd $PHP_CODE/tests/rake_tasks/
 // php -l Archiver.php
 
+
+#echo "\n\n READING: Archiver.php\n";
+
+#echo "\n\n REQUIRING: environment.php\n";
 include_once(dirname(__FILE__) . "/../config/environment.php");
+
 
 
 interface populate_the_table_arr
@@ -31,7 +36,7 @@ protected $table_names_arr = array(); // PrimaryTable name, FRT names, & all the
 
 protected $arr_elements    = array(); // utility array used when iterating thru an array.
 
-protected $primary_table   = "";
+public $primary_table   = "";
 
 protected $is_tracing = FALSE;
 
@@ -41,7 +46,7 @@ protected $is_tracing = FALSE;
 
 public function __construct($_is_tracing=FALSE)
 {
-    if ($_is_tracing) $this->is_tracing = TRUE;
+    if ($_is_tracing) $this->is_tracing = FALSE;
 
     $this->mysqli =& $GLOBALS["db_connection"];
     $this->initialize();
@@ -275,7 +280,7 @@ if ($this->is_tracing) {echo "\n\n LEAVING initialize()";}
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+/***
 public function populate_table_arr()
 {
 if ($this->is_tracing) {echo "\n\n ENTERING Archiver->populate_table_arr()";}
@@ -288,7 +293,7 @@ if ($this->is_tracing) {echo "\n\n ENTERING Archiver->populate_table_arr()";}
 
 if ($this->is_tracing) {echo "\n\n LEAVING populate_table_arr()";}
 } // end of populate_table_arr()
-
+***/
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -297,7 +302,7 @@ if ($this->is_tracing) {echo "\n\n LEAVING populate_table_arr()";}
 
 public function populate_table_names_arr()
 {
-if ($this->is_tracing) {echo "\n\n ENTERING Archiver->populate_table_arr()";}
+if ($this->is_tracing) {echo "\n\n ENTERING Archiver->populate_table_names_arr()";}
 
     // $table_arr contains: sourceTableName, archiveTableName, column_name
     // populate $table_names_arr with sourceTableName & archiveTableName

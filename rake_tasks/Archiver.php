@@ -1,11 +1,5 @@
 <?php
-// cd $PHP_CODE/tests/rake_tasks/
-// php -l Archiver.php
 
-
-#echo "\n\n READING: Archiver.php\n";
-
-#echo "\n\n REQUIRING: environment.php\n";
 include_once(dirname(__FILE__) . "/../config/environment.php");
 
 
@@ -15,15 +9,15 @@ interface populate_the_table_arr
     public function populate_table_arr();
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-// Archiver is the parent class of (and contains some functions common to) :
+// Archiver is the parent class of (and contains all the functions common to) :
 // - ArchiverDataObjects
 // - ArchiverHierarchyEntries
 //
 //////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 class Archiver
 {
@@ -40,13 +34,15 @@ public $primary_table   = "";
 
 protected $is_tracing = FALSE;
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 public function __construct($_is_tracing=FALSE)
 {
-    if ($_is_tracing) $this->is_tracing = FALSE;
+    if ($_is_tracing) $this->is_tracing = TRUE;
 
     $this->mysqli =& $GLOBALS["db_connection"];
     $this->initialize();
@@ -100,6 +96,7 @@ if ($this->is_tracing) {echo "\n\n LEAVING archive_id()";}
 //   but the foreign reference tables may contain multiple rows to archive per id.
 //
 /////////////////////////////////
+
 public function archive_table_by_id ($_archivable_id
                                     ,$_source_table_name
                                     ,$_archive_table_name
@@ -280,20 +277,18 @@ if ($this->is_tracing) {echo "\n\n LEAVING initialize()";}
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-/***
 public function populate_table_arr()
 {
-if ($this->is_tracing) {echo "\n\n ENTERING Archiver->populate_table_arr()";}
+echo "\n\n ENTERING Archiver->populate_table_arr()";
 
     // Any Class extending Archiver must define its own populate_table_arr() function.
     // It must, therefore, implement the populate_the_table_arr interface.
-    // But in case it doesn't, this function is here to draw attention the oversight.
-    
+    // But in case it doesn't, this function is here to draw attention that oversight.
+
+    echo "\n\n FATAL ERROR: EXITING Archiver->populate_table_arr()";
     exit;
 
-if ($this->is_tracing) {echo "\n\n LEAVING populate_table_arr()";}
 } // end of populate_table_arr()
-***/
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -337,11 +332,12 @@ if ($this->is_tracing) {echo "\n\n ENTERING process_archivable_ids($max_id_count
     $result = $this->mysqli->query($sql_statement);
     $this->exit_on_sql_error($this->mysqli->errno(), $this->mysqli->error());
 
-//echo "\n\n\t ARCHIVABLE ROWS FOUND: $result->num_rows";
+
 
     if ($result->num_rows == 0)
     {
-        return;  // If no rows are archivable, there's no work to do.
+        echo "\t NO ARCHIVABLE ROWS FOUND\n";
+        return;
     }
 
 

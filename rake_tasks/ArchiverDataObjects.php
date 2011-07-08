@@ -1,7 +1,13 @@
 <?php
+// cd $PHP_CODE/rake_tasks/
+// php -l ArchiverDataObjects.php
 
-include_once(dirname(__FILE__) . "/../config/environment.php");
-include 'Archiver.php';
+
+#echo "\n\n\t READING: ArchiverDataObjects.php\n";
+
+#echo "\n\n\t REQUIRING: Archiver.php\n";
+require_once 'Archiver.php';
+#echo "\n\n\t RETURNED FROM: Archiver.php\n";
 
 
 
@@ -45,16 +51,12 @@ include 'Archiver.php';
 class ArchiverDataObjects extends Archiver implements populate_the_table_arr
 {
 
-protected $primary_table   = "data_objects";
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 public function populate_table_arr()
 {
 if ($this->is_tracing) echo "\n\n ENTERING populate_table_arr()";
+
+$this->primary_table   = "data_objects";
 
 /*** Tables to be archived:
 

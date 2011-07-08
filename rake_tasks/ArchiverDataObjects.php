@@ -1,13 +1,6 @@
 <?php
-// cd $PHP_CODE/rake_tasks/
-// php -l ArchiverDataObjects.php
 
-
-#echo "\n\n\t READING: ArchiverDataObjects.php\n";
-
-#echo "\n\n\t REQUIRING: Archiver.php\n";
 require_once 'Archiver.php';
-#echo "\n\n\t RETURNED FROM: Archiver.php\n";
 
 
 
@@ -40,7 +33,7 @@ require_once 'Archiver.php';
 //        $this->my_archiver_data_objects = new ArchiverDataObjects();
 //
 //    Then invoke its process_archivable_ids() method.
-//        $this->my_archiver_data_objects->process_archivable_ids(max_id_count);
+//        $this->my_archiver_data_objects->process_archivable_ids(max_id_count); // default=1000
 //    where max_id_count is the maximum number of rows to archive in the primary table.
 //
 // 
@@ -50,6 +43,11 @@ require_once 'Archiver.php';
 
 class ArchiverDataObjects extends Archiver implements populate_the_table_arr
 {
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 public function populate_table_arr()

@@ -13,9 +13,32 @@ interface populate_the_table_arr
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-// Archiver is the parent class of (and contains all the functions common to) :
+// Archiver is the parent class of (and contains all the functions common to) the child classes:
+//
 // - ArchiverDataObjects
 // - ArchiverHierarchyEntries
+//
+// In fact, the only function required to be defined by the child classes is populate_table_arr().
+// Thus, child classes must extend Archiver and implement the populate_the_table_arr interface.
+//
+// Each child class is responsible for archiving a Primary Table (e.g. data_objects) and its
+// Foreign Reference Tables (FRTs).
+//
+// To add an FRT, add it to the populate_table_arr() function. e.g. If the FRT's table name is
+// "users_data_objects", and the column that refers to data_object.id is called "data_object_id",
+// then in populate_table_arr() you would add the line:
+//
+// $this->table_arr[$idx++]=array("users_data_objects"
+//                               ,"users_data_objects_archive"
+//                               ,"data_object_id");
+//
+// To add a new Primary Table you will need to create another child class.
+// (My advice would be to copy one of the existing child classes, and edit it to include the 
+// table names to be archived.)
+//
+// NB The Archiver class and its subclasses assume the existence of archive tables. A table's
+// archive table has the same name, plus the suffix "_archive".
+// For example, the name of data_objects's archive table is "data_objects_archive".
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 

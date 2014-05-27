@@ -697,7 +697,7 @@ class WikimediaPage
                 if(stripos($location[4], "N") === false) $this->georef["latitude"] *= -1;
                 $this->georef["longitude"] = $location[5] + ((($location[6] * 60) + ($location[7])) / 3600);
                 if(stripos($location[8], "W") === false) $this->georef["longitude"] *= -1;
-                
+
                 if(isset($location[9]))
                 {
                     $this->location = $location[9];
@@ -750,6 +750,18 @@ class WikimediaPage
     public function contains_template($template)
     {
         return preg_match("/\{\{".$template."\s*[\|\}]/u", $this->active_wikitext());
+    }
+
+    public function transcluded_categories()
+    {
+        //look for transclusions like {{:Category:Homo sapiens}}
+        if(preg_match_all("/\{\{:?Category:([^\}]+)\s*\}\}/u", $this->active_wikitext(), $arr))
+        {
+            return array_map(function($cat) { return "Category:".\WikiParser::make_valid_pagetitle($cat);}, $arr[1]);
+        } else
+        {
+            return array();
+        }
     }
 
     public function taxonav_as_array($template_name, $strip_syntax = true)
@@ -1067,7 +1079,7 @@ class TaxonomyParameters
         if($name === '') return $return_message;
 
         /* Make hybrid names a single word, replacing space after the × sign with a non-breaking space
-           Treat X, x or × as hybrid indicators if they are at the start or preceeded by a space, e.g. "X Cleistoza" becomes 
+           Treat X, x or × as hybrid indicators if they are at the start or preceeded by a space, e.g. "X Cleistoza" becomes
            ×Cleistoza and Salix × pendulina becomes Salix ×pendulina. This also helps us delimit species and genera names */
         static $multiply_sign_and_nonbreaking_space = "× "; //make sure the "space" in this string is actually a NBSP
         $name = preg_replace("/(?<=^| )[×x] +/iu", $multiply_sign_and_nonbreaking_space, $name);
@@ -1119,8 +1131,7 @@ class TaxonomyParameters
                     //sometimes people forget to put the dot after subsp. or var. Standardise these
                     $name = preg_replace("/ (subsp|ssp\.?) /i", " subsp. ", $name);
                     $name = preg_replace("/ var /i", " var. ", $name);
-                    //TODO - we don't cope with multi-word varieties which are epithets, most likely seen incorrectly in 
-                    //cultivars, e.g. Varietas='my variety name'.
+                    //TODO - we don't cope with multi-word varieties which are epithets, incorrectly seen e.g. in cultivars: Varietas='my cultivar name'.
                 }
             }
             // single word in 'species' or 'subspecies' - this could be an epithet

@@ -4,6 +4,40 @@ require_vendor('wikipedia');
 
 class test_connector_wikimedia extends SimpletestUnitBase
 {
+
+    static $Aves_include = <<<XML
+  <page>
+    <title>Template:Aves</title>
+    <ns>10</ns>
+    <id>13132279</id>
+    <revision>
+      <id>94127789</id>
+      <parentid>78733152</parentid>
+      <timestamp>2013-04-07T13:56:41Z</timestamp>
+      <text xml:space="preserve">
+{{TaxonavigationIncluded|Domain|Eukaryota|Regnum|Animalia|Phylum|Chordata|Subphylum|Vertebrata|Infraphylum|Gnathostomata|Superclassis|Tetrapoda|Classis|Aves|rank={{{rank|}}}|
+categorizeFamiliesIn=Aves|categorizeGeneraIn=Aves|documentTemplate={{{documentTemplate|yes}}}|documentTemplateWithClassification=IOC|categorizeTemplate={{{categorizeTemplate|yes}}}
+}}</text>
+    </revision>
+  </page>
+XML;
+
+    static $Angiosperms_include = <<<XML
+  <page>
+    <title>Template:Angiosperms</title>
+    <ns>10</ns>
+    <id>13862146</id>
+    <revision>
+      <id>123628829</id>
+      <parentid>78733139</parentid>
+      <timestamp>2014-05-10T12:13:25Z</timestamp>
+      <text xml:space="preserve">{{TaxonavigationIncluded|Domain|Eukaryota|(unranked)|Archaeplastida|Regnum|Plantae|Cladus|angiosperms|rank={{{rank|}}}|
+categorizeFamiliesIn=Plantae|documentTemplate={{{documentTemplate|yes}}}|documentTemplateWithClassification=APG III|categorizeTemplate={{{categorizeTemplate|yes}}}
+}}</text>
+    </revision>
+  </page>
+XML;
+
     function testMediaOnPage()
     {
         $p = new \WikimediaPage('<xml/>');
@@ -46,12 +80,12 @@ class test_connector_wikimedia extends SimpletestUnitBase
 
 [[Category:Macaca sylvanus]]";
 
-$this->assertTrue($p->information()['author'] == 'Karyn Sig');
-$this->assertTrue(number_format($p->point()['latitude'], 5) === "36.13274");
-$this->assertTrue(number_format($p->point()['longitude'], 6) === "-5.348888");
-// We should probably check here that $p->get_data_object_parameters()['agents'][0]->role == 'photographer', and
-// $p->get_data_object_parameters()['agents'][0]->fullName == 'Karyn Sig' but that relies filling data_object_parameters with
-// the results of an online API query using something like $pages = array($p); \WikimediaPage::process_pages_using_API($pages);
+        $this->assertTrue($p->information()['author'] == 'Karyn Sig');
+        $this->assertTrue(number_format($p->point()['latitude'], 5) === "36.13274");
+        $this->assertTrue(number_format($p->point()['longitude'], 6) === "-5.348888");
+        // We should probably check here that $p->get_data_object_parameters()['agents'][0]->role == 'photographer', and
+        // $p->get_data_object_parameters()['agents'][0]->fullName == 'Karyn Sig' but that relies filling data_object_parameters with
+        // the results of an online API query using something like $pages = array($p); \WikimediaPage::process_pages_using_API($pages);
 
     }
 
@@ -134,9 +168,82 @@ XML;
         $this->assertTrue(preg_match("/fiołek/u", $page1->description()));
     }
 
+    function testTrancludedCategoriesAndGalleries()
+    {
+         $include_xml = <<<XML
+  <page>
+    <title>Template:Accipitridae (IOC)</title>
+    <ns>10</ns>
+    <id>21271380</id>
+    <revision>
+      <id>105766220</id>
+      <parentid>78556711</parentid>
+      <timestamp>2013-09-29T17:14:42Z</timestamp>
+      <text xml:space="preserve">{{TaxonavigationIncluded2|classification=IOC|include=Aves|Superordo|Neognathae|Ordo|Accipitriformes|Familia|Accipitridae|rank={{{rank|}}}|
+categorizeSpeciesIn=Accipitridae|mustBeEmpty={{{classification|}}}{{{genus|}}}}}</text>
+    </revision>
+  </page>
+XML;
+
+        $main_cat = <<<XML
+  <page>
+    <title>Category:Milvus milvus</title>
+    <ns>14</ns>
+    <id>141095</id>
+    <revision>
+      <id>112065573</id>
+      <parentid>100883335</parentid>
+      <timestamp>2013-12-18T05:24:27Z</timestamp>
+      <text xml:space="preserve">&lt;onlyinclude&gt;{{Taxonavigation|
+include=Accipitridae (IOC)|
+Genus|Milvus|
+Species|Milvus milvus|
+authority=(Linnaeus, 1758)}}&lt;/onlyinclude&gt;
+{{wikispecies|Milvus milvus}}
+{{GeoGroupTemplate}}</text>
+    </revision>
+  </page>
+XML;
+        $sub_cat = <<<XML
+  <page>
+    <title>Category:Milvus milvus in flight</title>
+    <ns>14</ns>
+    <id>141096</id>
+    <revision>
+      <id>112065574</id>
+      <parentid>100883335</parentid>
+      <timestamp>2013-12-18T05:24:27Z</timestamp>
+      <text xml:space="preserve">{{Category:milvus_milvus}}
+[[Category:Milvus milvus]]
+[[Category:Milvus in flight]]</text>
+    </revision>
+  </page>
+XML;
+
+        $dummy_harvester= new WikimediaHarvester(null);
+        $dummy_harvester->locate_taxonomic_pages(self::$Aves_include);
+        $dummy_harvester->locate_taxonomic_pages($include_xml);
+        $dummy_harvester->locate_taxonomic_pages($main_cat);
+
+        $dummy_harvester->check_taxonomy_and_redirects($main_cat);
+        $dummy_harvester->check_taxonomy_and_redirects($sub_cat);
+
+        $mainpage = new \WikimediaPage($main_cat);
+        $subpage = new \WikimediaPage($sub_cat);
+
+        //check that we correctly get transcluded categories from the subpage
+        $this->assertTrue(in_array($mainpage->title, $subpage->transcluded_categories()));
+
+        //check that we have a taxonomy for the subpage, even though subpage didn't have a Taxonav
+        $this->assertTrue(array_key_exists($subpage->title, $dummy_harvester->taxa));
+
+        //check it is the correct taxonomy!
+        $this->assertTrue($dummy_harvester->taxa[$subpage->title]->scientificName() === "Milvus milvus (Linnaeus, 1758)");
+    }
+
     function testRecursiveIncludesPlusSubspeciesVarietiesAndHybrids()
     {
-         $include1_xml = <<<XML
+         $orchid_include = <<<XML
   <page>
     <title>Template:Orchidaceae (APG)</title>
     <ns>10</ns>
@@ -160,29 +267,6 @@ mustBeEmpty={{{classification|}}}{{{genus|}}}}}</text>
     </revision>
   </page>
 XML;
-         $include2_xml = <<<XML
-  <page>
-    <title>Template:Angiosperms</title>
-    <ns>10</ns>
-    <id>13862146</id>
-    <revision>
-      <id>123628829</id>
-      <parentid>78733139</parentid>
-      <timestamp>2014-05-10T12:13:25Z</timestamp>
-      <contributor>
-        <username>FrescoBot</username>
-        <id>1047183</id>
-      </contributor>
-      <minor />
-      <comment>Bot: [[User:FrescoBot/link syntax|link syntax]]</comment>
-      <text xml:space="preserve">{{TaxonavigationIncluded|Domain|Eukaryota|(unranked)|Archaeplastida|Regnum|Plantae|Cladus|angiosperms|rank={{{rank|}}}|
-      categorizeFamiliesIn=Plantae|documentTemplate={{{documentTemplate|yes}}}|documentTemplateWithClassification=APG III|categorizeTemplate={{{categorizeTemplate|yes}}} }}</text>
-      <sha1>kxneoukzggybsv69lat0npg8aexxwx9</sha1>
-      <model>wikitext</model>
-      <format>text/x-wiki</format>
-    </revision>
-  </page>
-XML;
 
         $p1 = new \WikimediaPage('<xml/>');
         $p1->text = "{{Taxonavigation|include=Orchidaceae (APG)|Subfamilia|Orchidoideae|Tribus|Orchideae|Subtribus|Orchidinae|
@@ -198,8 +282,8 @@ Nothospecies|gennarii|
 Nothovarietas|dummy|}}";
 
         $dummy_harvester= new WikimediaHarvester(null);
-        $dummy_harvester->locate_taxonomic_pages($include1_xml);
-        $dummy_harvester->locate_taxonomic_pages($include2_xml);
+        $dummy_harvester->locate_taxonomic_pages(self::$Angiosperms_include);
+        $dummy_harvester->locate_taxonomic_pages($orchid_include);
         $taxonomy1 = $p1->taxonomy($dummy_harvester->taxonav_includes);
         $taxonomy2 = $p2->taxonomy($dummy_harvester->taxonav_includes);
 
@@ -219,42 +303,7 @@ Nothovarietas|dummy|}}";
         /* Here we test the parsing of Taxonavigation and TaxonavigationIncluded templates, both for categories and galleries.
            This requires a number of different Wikimedia pages to be parsed */
 
-        $include1_xml = <<<XML
-  <page>
-    <title>Template:Aves</title>
-    <ns>10</ns>
-    <id>13132279</id>
-    <revision>
-      <id>94127789</id>
-      <parentid>78733152</parentid>
-      <timestamp>2013-04-07T13:56:41Z</timestamp>
-      <contributor>
-        <username>Liné1</username>
-        <id>80857</id>
-      </contributor>
-      <comment>categorizeGeneraIn</comment>
-      <text xml:space="preserve">{{TaxonavigationIncluded|
-Domain|Eukaryota|
-Regnum|Animalia|
-Phylum|Chordata|
-Subphylum|Vertebrata|
-Infraphylum|Gnathostomata|
-Superclassis|Tetrapoda|
-Classis|Aves|
-rank={{{rank|}}}|
-categorizeFamiliesIn=Aves|
-categorizeGeneraIn=Aves|
-documentTemplate={{{documentTemplate|yes}}}|
-documentTemplateWithClassification=IOC|
-categorizeTemplate={{{categorizeTemplate|yes}}} }}</text>
-      <sha1>by0o558ryqpu85nm55h1juo2rz3s1nz</sha1>
-      <model>wikitext</model>
-      <format>text/x-wiki</format>
-    </revision>
-  </page>
-XML;
-
-        $include2_xml = <<<XML
+        $include_xml = <<<XML
   <page>
     <title>Template:Emberizidae (IOC)</title>
     <ns>10</ns>
@@ -347,8 +396,8 @@ XML;
 
         $dummy_harvester = new WikimediaHarvester(null);
 
-        $dummy_harvester->locate_taxonomic_pages($include1_xml);
-        $dummy_harvester->locate_taxonomic_pages($include2_xml);
+        $dummy_harvester->locate_taxonomic_pages(self::$Aves_include);
+        $dummy_harvester->locate_taxonomic_pages($include_xml);
         $dummy_harvester->locate_taxonomic_pages($category_xml);
         $dummy_harvester->locate_taxonomic_pages($gallery_xml);
 

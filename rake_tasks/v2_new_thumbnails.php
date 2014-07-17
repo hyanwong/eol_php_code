@@ -103,10 +103,10 @@ function resize_image($path, $prefix)
     
     // // // // reduce_original($path, $prefix);
     create_smaller_version($path, 580, 360, $prefix);
-    create_smaller_version($prefix.'_580_360.jpg', 260, 190, $prefix);
-    create_smaller_version($prefix.'_580_360.jpg', 98, 68, $prefix);
-    create_upper_left_crop($prefix.'_580_360.jpg', $width, $height, 130, $prefix);
-    create_upper_left_crop($prefix.'_580_360.jpg', $width, $height, 88, $prefix);
+    create_smaller_version($prefix.'_580_360.jpg', array(260, 190), $prefix, '260_190.jpg');
+    create_smaller_version($prefix.'_580_360.jpg', array(98, 68), $prefix, '98_68.jpg');
+    create_square_thumbnails($prefix.'_580_360.jpg', $width, $height, 130, $prefix);
+    create_square_thumbnails($prefix.'_580_360.jpg', $width, $height, 88, $prefix);
     
     static $count = 0;
     $count++;
@@ -131,7 +131,7 @@ function create_smaller_version($path, $new_width, $new_height, $prefix)
                     -resize ".$new_width."x".$new_height."\">\" ".$prefix."_".$new_width."_".$new_height.".jpg");
 }
 
-function create_upper_left_crop($path, $width, $height, $square_dimension, $prefix)
+function create_square_thumbnails($path, $width, $height, $square_dimension, $prefix)
 {
     $min = min($width, $height);
     $factor = $square_dimension / $min;
@@ -147,6 +147,7 @@ function create_upper_left_crop($path, $width, $height, $square_dimension, $pref
                     +repage ".$prefix."_".$square_dimension."_".$square_dimension.".jpg";
     // echo $command;
     shell_exec($command);
+    //do we need to save to database here: I'm guessing this is just a one-off script.
 }
 
 /*

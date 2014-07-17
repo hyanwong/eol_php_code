@@ -367,15 +367,10 @@ class ContentManager
         return $dimensions;
     }
 
-    static function large_square_dimensions()
+    static function square_thumbnails_dimension()
     {
-        static $dimensions = array(130, 130);
-        return $dimensions;
-    }
-
-    static function small_square_dimensions()
-    {
-        static $dimensions = array(88, 88);
+    	//can have multiple values here, each corresponding to a square thumbnail. By default, we create small (88x88) and large (130x130) thumbnails
+        static $dimensions = array(88, 130);
         return $dimensions;
     }
 
@@ -391,8 +386,7 @@ class ContentManager
         $this->create_smaller_version($image_path, ContentManager::medium_image_dimensions(), $prefix, implode(ContentManager::medium_image_dimensions(), '_'));
         $this->create_smaller_version($image_path, ContentManager::small_image_dimensions(), $prefix, implode(ContentManager::small_image_dimensions(), '_'));
         if(isset($options['crop_width'])) $image_path = $prefix . '_orig.jpg';
-        $this->create_upper_left_crop($image_path, ContentManager::large_square_dimensions(), $prefix, $options);
-        $this->create_upper_left_crop($image_path, ContentManager::small_square_dimensions(), $prefix, $options);
+        $this->create_square_thumbnails($image_path, ContentManager::square_thumbnails_dimension(), $prefix, $options);
     }
 
     function create_agent_thumbnails($file, $prefix)
@@ -423,14 +417,15 @@ class ContentManager
         return $new_image_path;
     }
 
-    function create_upper_left_crop($path, $dimensions, $prefix, $options = array())
+    function create_square_thumbnails($path, $dimension, $prefix, $options = array())
     {
+    	$commands = array();
         if(isset($options['crop_width']))
         {
             // we have a bespoke crop region, with x & y offsets, plus a crop width
             // offsets are from the 580 x 360 version (but CSS scales them to 540 X 360. The crop will be taken from the original
             // form, so the offsets and width need to be converted to match the dimensions of the original form
-            $sizes = getimagesize($path); //this is the full-sized _orig image, properly rotated
+            $sizes = getimagesize($path); //this is the scaled image whose max dimensions are 580x360, properly rotated
             if(@!$sizes[1])
             {
                 trigger_error("ContentManager: Unable to determine image dimensions $file, using default crop", E_USER_NOTICE);
@@ -450,20 +445,33 @@ class ContentManager
                 $new_x_offset = floatval($options['x_offset']) * $offset_factor;
                 $new_y_offset = floatval($options['y_offset']) * $offset_factor;
 
-                $command = CONVERT_BIN_PATH. " $path -strip -background white -flatten -quiet -quality 80 -gravity NorthWest \
+				foreach($dimension as $d)
+                    $commands[$d] = CONVERT_BIN_PATH. " $path -strip -background white -flatten -quiet -quality 80 -gravity NorthWest \
                         -crop ".$new_crop_width."x".$new_crop_width."+".$new_x_offset."+".$new_y_offset." +repage \
-                        -resize ".$dimensions[0]."x".$dimensions[0];
+                        -resize ".$d."x".$d;
             }
         }else
         {
             // default command just makes the image square by cropping the edges: see http://www.imagemagick.org/Usage/resize/#fill
-            $command = CONVERT_BIN_PATH. " $path -strip -background white -flatten -quiet -quality 80 \
+			foreach($dimension as $d)
+                $commands[$d] = CONVERT_BIN_PATH. " $path -strip -background white -flatten -quiet -quality 80 \
                             -resize ".$dimensions[0]."x".$dimensions[0]."^ \
                             -gravity NorthWest -crop ".$dimensions[0]."x".$dimensions[0]."+0+0 +repage";
         }
-        $new_image_path = $prefix ."_". $dimensions[0] ."_". $dimensions[0] .".jpg";
-        shell_exec($command." ".$new_image_path);
-        self::create_checksum($new_image_path);
+        
+        foreach ($commands as $d => $command) {
+	        $new_image_path = $prefix ."_". $d ."_". $d .".jpg";
+    	    shell_exec($command." ".$new_image_path);
+        	self::create_checksum($new_image_path);
+        }
+        
+        //save thumbnail positions as percentages, which are not dependent on image sizes
+        if (isset($new_crop_width)) {
+            //save_thumbnail_crop_dimensions_to_DB($new_x_offset/$width, $new_y_offset/$height, ($new_x_offset+$new_crop_width)/$width, ($new_y_offset+$new_crop_width)/$height);
+        } else 
+        {
+            //save_thumbnail_crop_dimensions_to_DB(0,0,100,100);
+        }        	
     }
 
     function create_constrained_square_crop($path, $dimensions, $prefix)

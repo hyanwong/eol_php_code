@@ -391,8 +391,8 @@ class ContentManager
 
     function create_agent_thumbnails($file, $prefix)
     {
-        $this->create_constrained_square_crop($file, ContentManager::large_square_dimensions(), $prefix);
-        $this->create_constrained_square_crop($file, ContentManager::small_square_dimensions(), $prefix);
+    	foreach (ContentManager::square_thumbnails_dimension() as $dim)
+	        $this->create_constrained_square_crop($file, $dim, $prefix);
     }
 
     function reduce_original($path, $prefix, $options = array())
@@ -474,13 +474,13 @@ class ContentManager
         }        	
     }
 
-    function create_constrained_square_crop($path, $dimensions, $prefix)
+    function create_constrained_square_crop($path, $dimension, $prefix)
     {
         // requires "convert" to support -gravity center -extent: ImageMagick >= 6.3.2
         $command = CONVERT_BIN_PATH." $path -strip -background white -flatten -auto-orient -quiet -quality 80 \
-                        -resize '".$dimensions[0]."x".$dimensions[0]."' -gravity center \
-                        -extent '".$dimensions[0]."x".$dimensions[0]."' +repage";
-        $new_image_path = $prefix."_".$dimensions[0]."_".$dimensions[0].".jpg";
+                        -resize '".$dimension."x".$dimension."' -gravity center \
+                        -extent '".$dimension."x".$dimension."' +repage";
+        $new_image_path = $prefix."_".$dimension."_".$dimension.".jpg";
         shell_exec($command." ".$new_image_path);
         self::create_checksum($new_image_path);
         return $new_image_path;
